@@ -79,8 +79,8 @@ fig = px.scatter(
     title=f"{y_var} vs {x_var}",
     range_x=axis_range,
     range_y=axis_range,
-    # width=800,
-    # height=800,
+    width=800,
+    height=800,
 )
 
 st.plotly_chart(fig, use_container_width=True, theme="streamlit")
