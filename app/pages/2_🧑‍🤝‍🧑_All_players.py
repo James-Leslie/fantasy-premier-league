@@ -11,24 +11,40 @@ fpl_data = load_data()
 # filter out players who have played less than 50 minutes
 df = fpl_data.players_df.query("MP > 50").sort_values("Pts", ascending=False)
 
-# -------------------------------------------------------------------- side bar
+# ---------------------------------------------------- filters
+# Create a four-column layout
+col1, col2, col3, col4 = st.columns(4)
+
 # team slicer
-team_select = st.sidebar.multiselect("Team", df["team"].unique())
+team_select = col1.multiselect("Team", np.sort(df["team"].unique()))
 if team_select:
     team_filter = df["team"].isin(team_select)
     df = df[team_filter]
 # position slicer
-position_select = st.sidebar.multiselect("Position", df["pos"].unique())
+position_select = col2.multiselect("Position", df["pos"].unique())
 if position_select:
     pos_filter = df["pos"].isin(position_select)
     df = df[pos_filter]
 # price slicer
-price_max = st.sidebar.selectbox("Max price", np.arange(15.5, 3.5, -0.5))
+price_max = col3.number_input("Max price", value=df["£"].max(), step=0.1, format="%.1f")
 if price_max:
     price_filter = df["£"] <= price_max
     df = df[price_filter]
+# minutes played slicer
+mp_min = col4.number_input("Minutes played >=", value=90, step=10)
+if mp_min:
+    mp_filter = df["MP"] >= mp_min
+    df = df[mp_filter]
 
-# -------------------------------------------------------------- main container
+# ---------------------------------------------------- table
+st.header("Player stats")
+st.write("Click on columns for sorting")
+st.dataframe(
+    df.set_index(["pos", "team", "player_name", "£"]),
+    column_order=[key for key in style_players.keys()],
+    column_config=style_players,
+)
+
 # --------------------------------------------------- plots
 st.header("Scatter plot")
 
@@ -75,15 +91,6 @@ with st.expander("What are the lines above?"):
         each position.\n\nPlayers above the line, are better than average in 
         their position"""
     )
-
-# ---------------------------------------------------- table
-st.header("Player stats")
-st.write("Click on columns for sorting")
-st.dataframe(
-    df.set_index(["pos", "team", "player_name", "£"]),
-    column_order=[key for key in style_players.keys()],
-    column_config=style_players,
-)
 
 
 donate_message()
